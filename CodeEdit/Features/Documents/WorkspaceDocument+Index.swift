@@ -22,6 +22,25 @@ extension WorkspaceDocument.SearchState {
         indexStatus = .indexing(progress: 0.0)
 
         Task.detached {
+            let uuidString = UUID().uuidString
+            let createInfo: [String: Any] = [
+                "id": uuidString,
+                "action": "create",
+                "title": "Indexing | Processing files",
+                "message": "Creating an index to enable fast and accurate searches within your codebase.",
+                "isLoading": true
+            ]
+            NotificationCenter.default.post(name: .taskNotification, object: nil, userInfo: createInfo)
+
+            let createInfo2: [String: Any] = [
+                "id": UUID().uuidString,
+                "action": "create",
+                "title": "Downloading rust-analyzer",
+                "message": "Downloading the rust-analyzer for efficient and precise code analysis.",
+                "isLoading": true
+            ]
+            NotificationCenter.default.post(name: .taskNotification, object: nil, userInfo: createInfo2)
+
             let filePaths = self.getFileURLs(at: url)
 
             let asyncController = SearchIndexer.AsyncManager(index: indexer)
@@ -37,6 +56,13 @@ extension WorkspaceDocument.SearchState {
                     await MainActor.run {
                         self.indexStatus = .indexing(progress: progress)
                     }
+                    let updateInfo: [String: Any] = [
+                        "id": uuidString,
+                        "action": "update",
+                        "percentage": progress
+                    ]
+
+                    NotificationCenter.default.post(name: .taskNotification, object: nil, userInfo: updateInfo)
                 }
             }
             asyncController.index.flush()
@@ -44,6 +70,12 @@ extension WorkspaceDocument.SearchState {
             await MainActor.run {
                 self.indexStatus = .done
             }
+
+            let deleteInfo = [
+                "id": uuidString,
+                "action": "delete",
+            ]
+            NotificationCenter.default.post(name: .taskNotification, object: nil, userInfo: deleteInfo)
         }
     }
 

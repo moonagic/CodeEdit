@@ -143,4 +143,10 @@ extension NSToolbarItem.Identifier {
     static let toggleLastSidebarItem: NSToolbarItem.Identifier = NSToolbarItem.Identifier("ToggleLastSidebarItem")
     static let itemListTrackingSeparator = NSToolbarItem.Identifier("ItemListTrackingSeparator")
     static let branchPicker: NSToolbarItem.Identifier = NSToolbarItem.Identifier("BranchPicker")
+    static let addSidebarItem: NSToolbarItem.Identifier = NSToolbarItem.Identifier("AddSidebarItem")
+    static let stopTaskSidebarItem: NSToolbarItem.Identifier = NSToolbarItem.Identifier("StopTaskSidebarItem")
+    static let startTaskSidebarItem: NSToolbarItem.Identifier = NSToolbarItem.Identifier("StartTaskSidebarItem")
+    static let activityViewer: NSToolbarItem.Identifier = NSToolbarItem.Identifier("ActivityViewer")
+    static let warnings: NSToolbarItem.Identifier = NSToolbarItem.Identifier("WarningsSidebarItem")
+    static let errors: NSToolbarItem.Identifier = NSToolbarItem.Identifier("ErrorsSidebarItem")
 }

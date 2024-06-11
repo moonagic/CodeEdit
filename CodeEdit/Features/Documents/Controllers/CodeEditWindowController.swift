@@ -18,12 +18,15 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
 
     var observers: [NSKeyValueObservation] = []
 
+    var taskManager = TaskManager()
+
     var workspace: WorkspaceDocument?
     var workspaceSettings: CEWorkspaceSettings?
     var workspaceSettingsWindow: NSWindow?
     var quickOpenPanel: SearchPanel?
     var commandPalettePanel: SearchPanel?
     var navigatorSidebarViewModel: NavigatorSidebarViewModel?
+
 
     var splitViewController: NSSplitViewController!
 

@@ -19,6 +19,15 @@ enum ServiceContainer {
     /// Registers a factory closure for creating instances of a service type.
     ///
     /// - Parameter factory: An autoclosure that returns an instance of the service type.
+    /// 
+    /// ## Example Usage
+    /// ```swift
+    ///  ServiceContainer.register(
+    ///        PasteboardService()
+    ///    )
+    /// ```
+    ///
+    /// - Important: Remember to register your services in ``AppDelegate/setupServiceContainer``
     static func register<Service>(_ factory: @autoclosure @escaping () -> Service) {
         queue.sync {
             let key = ObjectIdentifier(Service.Type.self)

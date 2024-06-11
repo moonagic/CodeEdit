@@ -6,6 +6,7 @@
 //
 
 /// A property wrapper that provides access to a service instance.
+/// Before accessing the service, make sure to register it first using the `register` method.
 @propertyWrapper
 struct Service<Service> {
     var service: Service
