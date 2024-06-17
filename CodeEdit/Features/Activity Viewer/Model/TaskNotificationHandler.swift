@@ -76,7 +76,6 @@ class TaskNotificationListener: ObservableObject {
 ///
 /// - Important: Please refer to ``CodeEdit/NotificationModel`` and ensure you pass the correct values.
 class TaskNotificationHandler {
-
     @Published var notifications: [NotificationModel] = []
 
     // Could use OrderedDictionary, but removing and inserting at the start has linear complexity
@@ -84,7 +83,6 @@ class TaskNotificationHandler {
 
     /// Initialises a new `TaskNotificationHandler` and starts observing for task notifications.
     init() {
-        print("OBSERVING")
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleNotification(_:)),
@@ -146,7 +144,7 @@ class TaskNotificationHandler {
     /// Updates an existing task with new information.
     ///
     /// - Parameter task: A dictionary containing task information.
-    private func updateTask(task: [AnyHashable: Any]) {
+    private func updateTask(task: [AnyHashable: Any]) { 
         guard let taskID = task["id"] as? String else { return }
 
         if let index = notifications.firstIndex(where: { $0.id == taskID }) {

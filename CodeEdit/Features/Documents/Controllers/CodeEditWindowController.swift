@@ -18,7 +18,8 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
 
     var observers: [NSKeyValueObservation] = []
 
-    var taskManager = TaskManager()
+    var taskManagerListener: TaskManager
+//    @Service var taskManager: TaskManager
 
     var workspace: WorkspaceDocument?
     var workspaceSettings: CEWorkspaceSettings?
@@ -27,16 +28,28 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
     var commandPalettePanel: SearchPanel?
     var navigatorSidebarViewModel: NavigatorSidebarViewModel?
 
-
     var splitViewController: NSSplitViewController!
 
     internal var cancellables = [AnyCancellable]()
 
     init(window: NSWindow?, workspace: WorkspaceDocument?) {
+        ServiceContainer.register(
+            TaskManager()
+        )
+        
+        @Service var taskmanger: TaskManager
+        self.taskManagerListener = taskmanger
         super.init(window: window)
         guard let workspace else { return }
+        setupServiceContainerOnWorkspaceLevel(workspace: workspace)
+        initialiseServiceContainersOnWorkspaceLevel()
         self.workspace = workspace
-        self.workspaceSettings = CEWorkspaceSettings(workspaceDocument: workspace)
+
+        @Service var workspaceSettings: CEWorkspaceSettings
+        self.workspaceSettings = workspaceSettings
+
+
+//        self.workspaceSettings = CEWorkspaceSettings(workspaceDocument: workspace)
         setupSplitView(with: workspace)
 
         let view = CodeEditSplitView(controller: splitViewController).ignoresSafeArea()
@@ -197,5 +210,18 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
         } else {
             workspace?.editorManager.activeEditor.close()
         }
+    }
+
+    /// Setup all the services into a ServiceContainer for the **workspace** to use.
+    private func setupServiceContainerOnWorkspaceLevel(workspace: WorkspaceDocument) {
+        ServiceContainer.register(
+            CEWorkspaceSettings(workspaceDocument: workspace)
+        )
+    }
+
+    /// Initialises important service containers that need to be set up at startup.
+    /// On **workspace** level, not the entire application
+    private func initialiseServiceContainersOnWorkspaceLevel() {
+        @Service var taskNotificationHandler: CEWorkspaceSettings
     }
 }

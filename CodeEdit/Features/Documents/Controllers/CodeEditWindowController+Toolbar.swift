@@ -126,7 +126,7 @@ extension CodeEditWindowController {
                 label: "Stop",
                 tooltip: "Stop execution of task",
                 icon: "stop.fill",
-                action: nil
+                action: #selector(self.terminateActiveTask)
             )
         case .startTaskSidebarItem:
             return toolbarItem(
@@ -156,12 +156,13 @@ extension CodeEditWindowController {
             return toolbarItem
         case .activityViewer:
             let toolbarItem = NSToolbarItem(itemIdentifier: .activityViewer)
+            toolbarItem.visibilityPriority = .user
             toolbarItem.view = NSHostingView(
                 rootView: ActivityViewer(
-                    workspaceFileManager: workspace?.workspaceFileManager,
-                    taskManager: TaskManager()
+                    workspaceFileManager: workspace?.workspaceFileManager
                 )
             )
+
             return toolbarItem
         case .warnings:
             let toolbarItem = NSToolbarItem(itemIdentifier: .warnings)
@@ -220,8 +221,12 @@ extension CodeEditWindowController {
 
     @objc
     private func runActiveTask() {
-        print("RUNNING TASK")
-        taskManager.executeActiveTask()
+        taskManagerListener.executeActiveTask()
+    }
+
+    @objc
+    private func terminateActiveTask() {
+        taskManagerListener.terminateActiveTask()
     }
 }
 

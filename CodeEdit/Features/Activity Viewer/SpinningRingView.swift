@@ -37,9 +37,6 @@ struct SpinningRingView: View {
                         .onAppear {
                             self.previousValue = isAnimating
                             self.isAnimating.toggle()
-                            print("---------")
-                            print(previousValue)
-                            print(isAnimating)
                         }
                 }
             }

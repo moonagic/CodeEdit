@@ -32,15 +32,6 @@ extension WorkspaceDocument.SearchState {
             ]
             NotificationCenter.default.post(name: .taskNotification, object: nil, userInfo: createInfo)
 
-            let createInfo2: [String: Any] = [
-                "id": UUID().uuidString,
-                "action": "create",
-                "title": "Downloading rust-analyzer",
-                "message": "Downloading the rust-analyzer for efficient and precise code analysis.",
-                "isLoading": true
-            ]
-            NotificationCenter.default.post(name: .taskNotification, object: nil, userInfo: createInfo2)
-
             let filePaths = self.getFileURLs(at: url)
 
             let asyncController = SearchIndexer.AsyncManager(index: indexer)

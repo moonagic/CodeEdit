@@ -14,8 +14,6 @@ protocol WorkspaceSettingsGroup {
     func isEmpty() -> Bool
 }
 
-/// # Workspace Settings
-///
 /// The model of the workspace settings for `CodeEdit` that control the behavior of some functionality at the workspace
 /// level like the workspace name or defining tasks.  A `JSON` representation is persisted in the workspace's
 /// `./codeedit/settings.json`. file

@@ -36,9 +36,12 @@ final class CEWorkspaceSettings: ObservableObject {
 
         loadSettings()
 
-        self.storeTask = self.$preferences.throttle(for: 2.0, scheduler: RunLoop.main, latest: true).sink {
-            try? self.savePreferences($0)
-        }
+        self.storeTask = self.$preferences
+            .throttle(for: 2.0, scheduler: RunLoop.main, latest: true)
+            .sink {
+                // TODO: DO I EXPECT TO SAVE SETTINGS WITH OUT CLICKING DONE?
+                try? self.savePreferences($0)
+            }
     }
 
     /// Load and construct ``CEWorkspaceSettings`` model from `.codeedit/settings.json`

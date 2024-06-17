@@ -27,7 +27,7 @@ struct TaskNotificationsDetailView: View {
                     Divider()
                         .padding(.vertical, 5)
 
-                    if let message = selected.message {
+                    if let message = selected.message, !message.isEmpty {
                         Text(message)
                             .fixedSize(horizontal: false, vertical: true)
                             .transition(.identity)

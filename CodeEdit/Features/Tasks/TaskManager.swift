@@ -6,52 +6,133 @@
 //
 
 import Foundation
+import Dispatch
+import Combine
 
 /// This class handles the execution of tasks
 final class TaskManager: ObservableObject {
-    @Published var availableTask: Set<CETask>? = []
-    @Published var activeTasks: Set<CETaskRun> = []
+    @Published var activeTasks: [UUID: CETaskRun] = [:]
     @Published var selectedTaskID: UUID?
 
-    init() {
-//        self.activeTask = getTasks().first
+    var selectedTask: CETask? {
+        if let selectedTaskID {
+            return availableTasks.first { $0.id == selectedTaskID }
+        } else {
+            if let newSelectedTask = availableTasks.first {
+                self.selectedTaskID = newSelectedTask.id
+                return newSelectedTask
+            }
+        }
+        return nil
     }
 
-    /// Gets the current available tasks
-    func getTasks() -> [CETask] {
-        // TODO: Replace with actual tasks
-        return [
-//            TestTask(name: "dev"),
-//            TestTask(name: "backend"),
-//            TestTask(name: "auth"),
-//            TestTask(name: "test")
-            CETask(name: "dev", target: "test", workingDirectory: "test", command: "ls", environmentVariables: [])
-        ]
+    var availableTasks: [CETask] {
+        @Service var workspaceSettings: CEWorkspaceSettings
+
+        return workspaceSettings.preferences.tasks.items
     }
 
-    /// Executes the active task
     func executeActiveTask() {
-        // find task
-//        guard let task = availableTask?.first(where: { $0.id == selectedTaskID }) else {
-//            return
-//        }
-        let task =  CETask(name: "dev", target: "test", workingDirectory: "test", command: "ls", environmentVariables: [])
-        let newActiveTask = CETaskRun(task: task)
-        activeTasks.insert(newActiveTask)
-        Task.detached {
-            try? await newActiveTask.start()
+        @Service var workspaceSettings: CEWorkspaceSettings
+        let task = workspaceSettings.preferences.tasks.items.first { $0.id == selectedTaskID }
+        guard let task else { return }
+        // A process can only be started once, that means we have to renew the Process and Pipe
+        // but don't initialise a new object.
+        if activeTasks[task.id] != nil {
+            activeTasks[task.id]!.renew()
+            activeTasks[task.id]!.run()
+        } else {
+            let runningTask = CETaskRun(task: task)
+            runningTask.run()
+            Task {
+                await MainActor.run {
+                    activeTasks[task.id] = runningTask
+                }
+            }
+        }
+    }
+    private func createRunningTask(taskID: UUID, runningTask: CETaskRun) async {
+        await MainActor.run {
+            activeTasks[taskID] = runningTask
         }
     }
 
-//    func runTask() -> AsyncThrowingMapSequence<LiveCommandStream, Progress> {
-//        let command = "ls"
-//
-//
-//    }
-//
-//    func runLive(_ command: String) -> LiveCommandStream {
-//
-//    }
+    func terminateActiveTask() {
+        @Service var workspaceSettings: CEWorkspaceSettings
+        let taskID = selectedTaskID
+        guard let taskID else {
+            return
+        }
 
-    func stopTask() { }
+        terminateTask(taskID: taskID)
+    }
+
+    /// Suspends the task associated with the given task ID.
+    ///
+    /// Suspending a task means that the task's execution is paused. 
+    /// The task will not run or consume CPU time until it is resumed.
+    /// If there is no task associated with the given ID, or if the task is not currently running, 
+    /// this method does nothing.
+    ///
+    /// - Parameter taskID: The ID of the task to suspend.
+    func suspendTask(taskID: UUID) {
+        if let process = activeTasks[taskID]?.process {
+            process.suspend()
+        }
+    }
+
+    /// Resumes the task associated with the given task ID.
+    ///
+    /// If there is no task associated with the given ID, or if the task is not currently suspended, 
+    /// this method does nothing.
+    ///
+    /// - Parameter taskID: The ID of the task to resume.
+    func resumeTask(taskID: UUID) {
+        if let process = activeTasks[taskID]?.process {
+            process.resume()
+        }
+    }
+
+    /// Terminates the task associated with the given task ID.
+    ///
+    /// Terminating a task sends a SIGTERM signal to the process, which is a request to the process to stop execution.
+    /// Most processes will stop when they receive a SIGTERM signal. 
+    /// However, a process can choose to ignore this signal.
+    ///
+    /// If there is no task associated with the given ID, 
+    /// or if the task is not currently running, this method does nothing.
+    ///
+    /// - Parameter taskID: The ID of the task to terminate.
+    func terminateTask(taskID: UUID) {
+        guard let process = activeTasks[taskID]?.process, process.isRunning else {
+            return
+        }
+        process.terminate()
+        process.waitUntilExit()
+    }
+
+    /// Interrupts the task associated with the given task ID.
+    ///
+    /// Interrupting a task sends a SIGINT signal to the process, which is a request to the process to stop execution.
+    /// This is the same signal that is sent when you press Ctrl+C in a terminal.
+    /// It's a polite request to the process to stop what it's doing and terminate.
+    /// However, the process can choose to ignore this signal or handle it in a custom way.
+    ///
+    /// If there is no task associated with the given ID, or if the task is not currently running, 
+    /// this method does nothing.
+    ///
+    /// - Parameter taskID: The ID of the task to interrupt.
+    func interruptTask(taskID: UUID) {
+        guard let process = activeTasks[taskID]?.process, process.isRunning else {
+            return
+        }
+        process.interrupt()
+        process.waitUntilExit()
+    }
+
+    func stopAllTasks() {
+        for (id, _) in activeTasks {
+            interruptTask(taskID: id)
+        }
+    }
 }

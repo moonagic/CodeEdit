@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupServiceContainer()
+        initialiseServiceContainers()
         enableWindowSizeSaveOnQuit()
         Settings.shared.preferences.general.appAppearance.applyAppearance()
         checkForFilesToOpen()
@@ -237,6 +238,11 @@ private func setupServiceContainer() {
     ServiceContainer.register(
         TaskNotificationHandler()
     )
+}
+
+/// Initialises important service containers that need to be set up at startup.
+private func initialiseServiceContainers() {
+    @Service var taskNotificationHandler: TaskNotificationHandler
 }
 
 extension AppDelegate {

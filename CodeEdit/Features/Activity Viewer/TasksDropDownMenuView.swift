@@ -1,0 +1,161 @@
+//
+//  TasksDropDownMenuView.swift
+//  CodeEdit
+//
+//  Created by Tommy Ludwig on 15.06.24.
+//
+
+import SwiftUI
+
+struct TasksDropDownMenuView: View {
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Service private var workspaceSettings: CEWorkspaceSettings
+
+    @State var isTaskPopOverPresented: Bool = false
+    @State private var isHoveringTasks: Bool = false
+
+    var projectSettings: CEWorkspaceSettingsData.ProjectSettings?
+    var tasksSettings: CEWorkspaceSettingsData.TasksSettings?
+
+    @State private var taskStatus: [UUID: CETaskStatus] = [:]
+
+    @ObservedObject var taskManager: TaskManager
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "gearshape")
+                .imageScale(.medium)
+
+            Text(taskManager.selectedTask?.name ?? "Unknown")
+                .font(.subheadline)
+
+            if let taskID = taskManager.selectedTaskID {
+                Circle()
+                    .fill(taskStatus[taskID]?.color ?? CETaskStatus.stopped.color)
+                    .frame(width: 5, height: 5)
+            } else {
+                Circle()
+                    .fill(CETaskStatus.stopped.color)
+                    .frame(width: 5, height: 5)
+            }
+        }
+        .font(.caption)
+        .padding(.trailing, 9)
+        .padding(5)
+        .background {
+            Color(nsColor: colorScheme == .dark ? .white : .black)
+                .opacity(isHoveringTasks || isTaskPopOverPresented ? 0.05 : 0)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 4, height: 4)))
+            HStack {
+                Spacer()
+                if isHoveringTasks || isTaskPopOverPresented {
+                    VStack(spacing: 1) {
+                        Image(systemName: "chevron.down")
+                    }
+                    .font(.system(size: 8, weight: .bold, design: .default))
+                    .padding(.top, 0.5)
+                    .padding(.trailing, 3)
+                }
+            }
+        }
+        .onHover(perform: { hovering in
+            self.isHoveringTasks = hovering
+        })
+        .popover(isPresented: $isTaskPopOverPresented) {
+            VStack(alignment: .leading, spacing: 0) {
+                if let tasks = tasksSettings?.items {
+                    ForEach(tasks, id: \.name) { item in
+                        TasksDropDownMenuItemView(
+                            taskManager: taskManager,
+                            settings: workspaceSettings,
+                            taskStatus: taskStatus,
+                            item: item
+                        )
+                    }
+                }
+                Divider()
+                    .padding(.vertical, 5)
+
+                Group {
+                    OptionMenuItemView(label: "Add Task..") {
+                        NSApp.sendAction(
+                            #selector(CodeEditWindowController.openWorkspaceSettings(_:)), to: nil, from: nil
+                        )
+                    }
+                    OptionMenuItemView(label: "Manage Tasks...") {
+                        NSApp.sendAction(
+                            #selector(CodeEditWindowController.openWorkspaceSettings(_:)), to: nil, from: nil
+                        )
+                    }
+                }
+            }
+            .padding(5)
+            .frame(width: 215)
+        }
+        .onTapGesture {
+            self.isTaskPopOverPresented.toggle()
+        }
+        .onReceive(taskManager.$activeTasks, perform: { activeTasks in
+            taskStatus.removeAll()
+            for (key, value) in activeTasks {
+                taskStatus[key] = value.status
+            }
+        })
+    }
+}
+
+// #Preview {
+    //    TasksDropDownMenuView()
+// }
+
+struct TasksDropDownMenuItemView: View {
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @ObservedObject var taskManager: TaskManager
+    @ObservedObject var settings: CEWorkspaceSettings
+
+    var taskStatus: [UUID: CETaskStatus] = [:]
+    var item: CETask
+
+    var body: some View {
+        HStack {
+            if taskManager.selectedTaskID == item.id {
+                Image(systemName: "checkmark")
+                    .imageScale(.small)
+                    .frame(width: 10)
+            } else {
+                Spacer()
+                    .frame(width: 18)
+            }
+            Image(systemName: "gearshape")
+                .imageScale(.medium)
+            Text(item.name)
+
+            Spacer()
+            if let taskID = taskManager.selectedTaskID {
+                Circle()
+                    .fill(taskStatus[taskID]?.color ?? CETaskStatus.stopped.color)
+                    .frame(width: 5, height: 5)
+            } else {
+                Circle()
+                    .fill(CETaskStatus.stopped.color)
+                    .frame(width: 5, height: 5)
+            }
+        }
+        .padding(.vertical, 5)
+        .padding(.horizontal, 10)
+        .modifier(DropdownMenuItemViewModifier())
+        .onTapGesture {
+            taskManager.selectedTaskID = item.id
+            dismiss()
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 5))
+    }
+}
+
+//#Preview {
+//    TasksDropDownMenuView()
+//}
+

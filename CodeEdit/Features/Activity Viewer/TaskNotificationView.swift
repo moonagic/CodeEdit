@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TaskNotificationView: View {
-    @StateObject private var currentTasksListener = TaskNotificationListener()
+    @StateObject var currentTasksListener = TaskNotificationListener()
     @State private var hovered: Bool = false
     @State private var isPresented: Bool = false
 
