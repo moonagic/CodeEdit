@@ -12,8 +12,6 @@ struct ActivityViewer: View {
     @Environment(\.colorScheme)
     var colorScheme
 
-    @Service private var workspaceSettings: CEWorkspaceSettings
-
     @State private var projectSettings: CEWorkspaceSettingsData.ProjectSettings?
     @State private var tasksSettings: CEWorkspaceSettingsData.TasksSettings?
 
@@ -22,13 +20,22 @@ struct ActivityViewer: View {
     @State private var isHoveringTasks: Bool = false
     @State private var isPresentedTasks: Bool = false
 
-    @Service var taskManager: TaskManager
     private var workspaceFileManager: CEWorkspaceFileManager?
 
+    @ObservedObject var taskNotificationHandler: TaskNotificationHandler
+    @ObservedObject var workspaceSettings: CEWorkspaceSettings
+    @ObservedObject var taskManager: TaskManager
+
     init(
-        workspaceFileManager: CEWorkspaceFileManager?
+        workspaceFileManager: CEWorkspaceFileManager?,
+        workspaceSettings: CEWorkspaceSettings,
+        taskNotificationHandler: TaskNotificationHandler,
+        taskManager: TaskManager
     ) {
         self.workspaceFileManager = workspaceFileManager
+        self.workspaceSettings = workspaceSettings
+        self.taskNotificationHandler = taskNotificationHandler
+        self.taskManager = taskManager
     }
     var body: some View {
             HStack {
@@ -47,7 +54,7 @@ struct ActivityViewer: View {
 
                     Spacer()
 
-                    TaskNotificationView()
+                    TaskNotificationView(taskNotificationHandler: taskNotificationHandler)
                 }
                 .padding(.horizontal, 10)
                 .background {

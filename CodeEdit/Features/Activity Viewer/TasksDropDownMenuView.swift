@@ -11,8 +11,6 @@ struct TasksDropDownMenuView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Service private var workspaceSettings: CEWorkspaceSettings
-
     @State var isTaskPopOverPresented: Bool = false
     @State private var isHoveringTasks: Bool = false
 
@@ -73,7 +71,6 @@ struct TasksDropDownMenuView: View {
                     ForEach(tasks, id: \.name) { item in
                         TasksPopoverView(
                             taskManager: taskManager,
-                            settings: workspaceSettings,
                             taskStatus: taskStatus,
                             item: item
                         )
@@ -115,7 +112,6 @@ struct TasksPopoverView: View {
     private var dismiss
 
     @ObservedObject var taskManager: TaskManager
-    @ObservedObject var settings: CEWorkspaceSettings
 
     var taskStatus: [UUID: CETaskStatus] = [:]
     var item: CETask

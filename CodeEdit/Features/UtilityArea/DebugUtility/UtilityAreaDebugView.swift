@@ -10,9 +10,9 @@ import Combine
 
 struct UtilityAreaDebugView: View {
     @EnvironmentObject private var utilityAreaViewModel: UtilityAreaViewModel
-    @State var tabSelection: UUID?
+    @EnvironmentObject private var taskManager: TaskManager
 
-    @Service var taskManager: TaskManager
+    @State var tabSelection: UUID?
     @State var activeTasks: [CEActiveTask] = []
 
     @Namespace var bottomID

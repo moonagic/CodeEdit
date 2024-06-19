@@ -235,14 +235,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
 /// Setup all the services into a ServiceContainer for the application to use.
 private func setupServiceContainer() {
-    ServiceContainer.register(
-        TaskNotificationHandler()
-    )
+
 }
 
 /// Initialises important service containers that need to be set up at startup.
 private func initialiseServiceContainers() {
-    @Service var taskNotificationHandler: TaskNotificationHandler
+
 }
 
 extension AppDelegate {

@@ -8,26 +8,26 @@
 import SwiftUI
 
 struct TaskNotificationView: View {
-    @StateObject var currentTasksListener = TaskNotificationListener()
+    @ObservedObject var taskNotificationHandler: TaskNotificationHandler
     @State private var hovered: Bool = false
     @State private var isPresented: Bool = false
 
     var body: some View {
-        if let currentTaskNotifications = currentTasksListener.currentTaskNotifications.notifications.first {
+        if let notification = taskNotificationHandler.notifications.first {
             HStack {
-                Text(currentTaskNotifications.title)
+                Text(notification.title)
                     .font(.subheadline)
 
-                if currentTaskNotifications.isLoading {
+                if notification.isLoading {
                     SpinningRingView(
-                        progress: currentTaskNotifications.percentage,
-                        currentTaskCount: currentTasksListener.currentTaskNotifications.notifications.count
+                        progress: notification.percentage,
+                        currentTaskCount: taskNotificationHandler.notifications.count
                     )
                     .padding(.leading, 5)
                     .frame(height: 15)
                 }
             }
-            .animation(.easeInOut, value: currentTaskNotifications)
+            .animation(.easeInOut, value: notification)
             .padding(3)
             .background {
                 if hovered {
@@ -41,7 +41,7 @@ struct TaskNotificationView: View {
             }
             .padding(-3)
             .popover(isPresented: $isPresented) {
-                TaskNotificationsDetailView(currentTasksListener: currentTasksListener)
+                TaskNotificationsDetailView(taskNotificationHandler: taskNotificationHandler)
             }.onTapGesture {
                 self.isPresented.toggle()
             }
@@ -50,5 +50,5 @@ struct TaskNotificationView: View {
 }
 
 #Preview {
-    TaskNotificationView()
+    TaskNotificationView(taskNotificationHandler: TaskNotificationHandler())
 }

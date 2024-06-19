@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct UtilityAreaTabView<Content: View, LeadingSidebar: View, TrailingSidebar: View>: View {
-    @ObservedObject var model: UtilityAreaTabViewModel
+    @ObservedObject var utilityAreaTabViewModel: UtilityAreaTabViewModel
 
     let content: (UtilityAreaTabViewModel) -> Content
     let leadingSidebar: (UtilityAreaTabViewModel) -> LeadingSidebar?
@@ -25,7 +25,7 @@ struct UtilityAreaTabView<Content: View, LeadingSidebar: View, TrailingSidebar: 
         hasLeadingSidebar: Bool = true,
         hasTrailingSidebar: Bool = true
     ) {
-        self.model = model
+        self.utilityAreaTabViewModel = model
 
         self.content = content
         self.leadingSidebar = leadingSidebar
@@ -82,67 +82,67 @@ struct UtilityAreaTabView<Content: View, LeadingSidebar: View, TrailingSidebar: 
     var body: some View {
         SplitView(axis: .horizontal) {
             // Leading Sidebar
-            if model.hasLeadingSidebar {
-                leadingSidebar(model)
+            if utilityAreaTabViewModel.hasLeadingSidebar {
+                leadingSidebar(utilityAreaTabViewModel)
                     .collapsable()
-                    .collapsed($model.leadingSidebarIsCollapsed)
+                    .collapsed($utilityAreaTabViewModel.leadingSidebarIsCollapsed)
                     .frame(minWidth: 200, idealWidth: 240, maxWidth: 400)
                     .environment(\.paneArea, .leading)
             }
 
             // Content Area
-            content(model)
+            content(utilityAreaTabViewModel)
                 .holdingPriority(.init(1))
                 .environment(\.paneArea, .main)
 
             // Trailing Sidebar
-            if model.hasTrailingSidebar {
-                trailingSidebar(model)
+            if utilityAreaTabViewModel.hasTrailingSidebar {
+                trailingSidebar(utilityAreaTabViewModel)
                     .collapsable()
-                    .collapsed($model.trailingSidebarIsCollapsed)
+                    .collapsed($utilityAreaTabViewModel.trailingSidebarIsCollapsed)
                     .frame(minWidth: 200, idealWidth: 240, maxWidth: 400)
                     .environment(\.paneArea, .trailing)
             }
         }
-        .animation(.default, value: model.leadingSidebarIsCollapsed)
-        .animation(.default, value: model.trailingSidebarIsCollapsed)
+        .animation(.default, value: utilityAreaTabViewModel.leadingSidebarIsCollapsed)
+        .animation(.default, value: utilityAreaTabViewModel.trailingSidebarIsCollapsed)
         .frame(maxHeight: .infinity)
         .overlay(alignment: .bottomLeading) {
-            if model.hasLeadingSidebar {
+            if utilityAreaTabViewModel.hasLeadingSidebar {
                 PaneToolbar {
                     PaneToolbarSection {
                         Button {
-                            model.leadingSidebarIsCollapsed.toggle()
+                            utilityAreaTabViewModel.leadingSidebarIsCollapsed.toggle()
                         } label: {
                             Image(systemName: "square.leadingthird.inset.filled")
                         }
-                        .buttonStyle(.icon(isActive: !model.leadingSidebarIsCollapsed))
+                        .buttonStyle(.icon(isActive: !utilityAreaTabViewModel.leadingSidebarIsCollapsed))
                     }
                     Divider()
                 }
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            if model.hasTrailingSidebar {
+            if utilityAreaTabViewModel.hasTrailingSidebar {
                 PaneToolbar {
                     Divider()
                     PaneToolbarSection {
                         Button {
-                            model.trailingSidebarIsCollapsed.toggle()
+                            utilityAreaTabViewModel.trailingSidebarIsCollapsed.toggle()
                         } label: {
                             Image(systemName: "square.trailingthird.inset.filled")
                         }
-                        .buttonStyle(.icon(isActive: !model.trailingSidebarIsCollapsed))
+                        .buttonStyle(.icon(isActive: !utilityAreaTabViewModel.trailingSidebarIsCollapsed))
                         Spacer()
                             .frame(width: 24)
                     }
                 }
             }
         }
-        .environmentObject(model)
+        .environmentObject(utilityAreaTabViewModel)
         .onAppear {
-            model.hasLeadingSidebar = hasLeadingSidebar
-            model.hasTrailingSidebar = hasTrailingSidebar
+            utilityAreaTabViewModel.hasLeadingSidebar = hasLeadingSidebar
+            utilityAreaTabViewModel.hasTrailingSidebar = hasTrailingSidebar
         }
     }
 }

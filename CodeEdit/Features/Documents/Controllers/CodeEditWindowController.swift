@@ -18,38 +18,37 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
 
     var observers: [NSKeyValueObservation] = []
 
-    var taskManagerListener: TaskManager
-//    @Service var taskManager: TaskManager
-
     var workspace: WorkspaceDocument?
-    var workspaceSettings: CEWorkspaceSettings?
     var workspaceSettingsWindow: NSWindow?
     var quickOpenPanel: SearchPanel?
     var commandPalettePanel: SearchPanel?
     var navigatorSidebarViewModel: NavigatorSidebarViewModel?
 
+    var taskManger: TaskManager?
+    var workspaceSettings: CEWorkspaceSettings?
+    var taskNotificationHandler: TaskNotificationHandler?
+
     var splitViewController: NSSplitViewController!
 
     internal var cancellables = [AnyCancellable]()
 
-    init(window: NSWindow?, workspace: WorkspaceDocument?) {
-        ServiceContainer.register(
-            TaskManager()
-        )
-
-        @Service var taskmanger: TaskManager
-        self.taskManagerListener = taskmanger
+    init(
+        window: NSWindow?,
+        workspace: WorkspaceDocument?,
+        taskManger: TaskManager?,
+        workspaceSettings: CEWorkspaceSettings?,
+        taskNotificationHandler: TaskNotificationHandler?
+    ) {
         super.init(window: window)
-        guard let workspace else { return }
-        setupServiceContainerOnWorkspaceLevel(workspace: workspace)
+        setupServiceContainerOnWorkspaceLevel()
         initialiseServiceContainersOnWorkspaceLevel()
+
+        guard let workspace else { return }
         self.workspace = workspace
-
-        @Service var workspaceSettings: CEWorkspaceSettings
         self.workspaceSettings = workspaceSettings
+        self.taskManger = taskManger
+        self.taskNotificationHandler = taskNotificationHandler
 
-
-//        self.workspaceSettings = CEWorkspaceSettings(workspaceDocument: workspace)
         setupSplitView(with: workspace)
 
         let view = CodeEditSplitView(controller: splitViewController).ignoresSafeArea()
@@ -107,6 +106,7 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
                     .environmentObject(workspace.editorManager)
                     .environmentObject(workspace.statusBarViewModel)
                     .environmentObject(workspace.utilityAreaModel)
+                    .environmentObject(workspace.taskManger ?? TaskManager(workspaceSettings: workspace.workspaceSettings ?? CEWorkspaceSettings(workspaceDocument: workspace)))
             }
         }
 
@@ -213,15 +213,9 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
     }
 
     /// Setup all the services into a ServiceContainer for the **workspace** to use.
-    private func setupServiceContainerOnWorkspaceLevel(workspace: WorkspaceDocument) {
-        ServiceContainer.register(
-            CEWorkspaceSettings(workspaceDocument: workspace)
-        )
-    }
+    private func setupServiceContainerOnWorkspaceLevel() { }
 
     /// Initialises important service containers that need to be set up at startup.
     /// On **workspace** level, not the entire application
-    private func initialiseServiceContainersOnWorkspaceLevel() {
-        @Service var taskNotificationHandler: CEWorkspaceSettings
-    }
+    private func initialiseServiceContainersOnWorkspaceLevel() { }
 }

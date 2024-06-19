@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct TaskNotificationsDetailView: View {
-    @ObservedObject var currentTasksListener: TaskNotificationListener
+    @ObservedObject var taskNotificationHandler: TaskNotificationHandler
     @State private var selectedTaskNotificationIndex: Int = 0
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
                 if let selected =
-                    currentTasksListener
-                    .currentTaskNotifications
+                    taskNotificationHandler
                     .notifications[safe: selectedTaskNotificationIndex] {
                     Text(selected.title)
                         .font(.headline)
@@ -78,8 +77,7 @@ struct TaskNotificationsDetailView: View {
                             Image(systemName: "chevron.right")
                         })
                         .disabled(
-                            // swiftlint:disable:next line_length
-                            selectedTaskNotificationIndex + 1 == currentTasksListener.currentTaskNotifications.notifications.count
+                            selectedTaskNotificationIndex + 1 == taskNotificationHandler.notifications.count
                         )
                     }.animation(.spring, value: selected)
                 } else {
@@ -97,7 +95,7 @@ struct TaskNotificationsDetailView: View {
         }
         .padding(5)
         .frame(width: 220)
-        .onChange(of: currentTasksListener.currentTaskNotifications.notifications) { newValue in
+        .onChange(of: taskNotificationHandler.notifications) { newValue in
             if selectedTaskNotificationIndex >= newValue.count {
                 selectedTaskNotificationIndex = 0
             }
@@ -106,5 +104,5 @@ struct TaskNotificationsDetailView: View {
 }
 
 #Preview {
-    TaskNotificationsDetailView(currentTasksListener: TaskNotificationListener())
+    TaskNotificationsDetailView(taskNotificationHandler: TaskNotificationHandler())
 }

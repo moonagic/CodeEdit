@@ -11,7 +11,6 @@ import SwiftUI
 ///
 /// A model class to host and manage data for the Utility area.
 class UtilityAreaViewModel: ObservableObject {
-
     @Published var terminals: [UtilityAreaTerminal] = []
 
     @Published var selectedTerminals: Set<UtilityAreaTerminal.ID> = []

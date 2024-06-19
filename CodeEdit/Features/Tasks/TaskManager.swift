@@ -14,6 +14,12 @@ final class TaskManager: ObservableObject {
     @Published var activeTasks: [UUID: CEActiveTask] = [:]
     @Published var selectedTaskID: UUID?
 
+    var workspaceSettings: CEWorkspaceSettings
+
+    init(workspaceSettings: CEWorkspaceSettings) {
+        self.workspaceSettings = workspaceSettings
+    }
+
     var selectedTask: CETask? {
         if let selectedTaskID {
             return availableTasks.first { $0.id == selectedTaskID }
@@ -31,8 +37,6 @@ final class TaskManager: ObservableObject {
     }
 
     var availableTasks: [CETask] {
-        @Service var workspaceSettings: CEWorkspaceSettings
-
         return workspaceSettings.preferences.tasks.items
     }
 
@@ -43,7 +47,6 @@ final class TaskManager: ObservableObject {
     }
 
     func executeActiveTask() {
-        @Service var workspaceSettings: CEWorkspaceSettings
         let task = workspaceSettings.preferences.tasks.items.first { $0.id == selectedTaskID }
         guard let task else { return }
         runTask(task: task)
@@ -72,7 +75,6 @@ final class TaskManager: ObservableObject {
     }
 
     func terminateActiveTask() {
-        @Service var workspaceSettings: CEWorkspaceSettings
         let taskID = selectedTaskID
         guard let taskID else {
             return

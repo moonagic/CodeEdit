@@ -14,9 +14,6 @@ struct SchemeDropDownMenuView: View {
     @State var isSchemePopOverPresented: Bool = false
     @State private var isHoveringScheme: Bool = false
 
-    // TODO: MAYBE PASS INSTEAD OF INJECT
-    @Service private var workspaceSettings: CEWorkspaceSettings
-
     var projectSettings: CEWorkspaceSettingsData.ProjectSettings?
     var tasksSettings: CEWorkspaceSettingsData.TasksSettings?
     var workspaceFileManager: CEWorkspaceFileManager?
