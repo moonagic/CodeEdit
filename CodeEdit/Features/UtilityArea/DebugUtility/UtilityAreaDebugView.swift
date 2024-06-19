@@ -13,7 +13,7 @@ struct UtilityAreaDebugView: View {
     @State var tabSelection: UUID?
 
     @Service var taskManager: TaskManager
-    @State var activeTasks: [CETaskRun] = []
+    @State var activeTasks: [CEActiveTask] = []
 
     @Namespace var bottomID
 
@@ -25,14 +25,18 @@ struct UtilityAreaDebugView: View {
                         VStack {
                             HStack {
                                 Button {
-
+                                    if let task = taskManager.activeTasks[tabSelection]?.task {
+                                        taskManager.runTask(task: task)
+                                    }
                                 } label: {
                                     Image(systemName: "memories")
                                         .foregroundStyle(.green)
                                 }.buttonStyle(.icon)
 
                                 Button {
-
+                                    if let taskID = taskManager.activeTasks[tabSelection]?.task.id {
+                                        taskManager.terminateTask(taskID: taskID)
+                                    }
                                 } label: {
                                     Image(systemName: "stop.fill")
                                         .foregroundStyle(.red)
@@ -80,24 +84,31 @@ struct UtilityAreaDebugView: View {
                     }
             }
         } leadingSidebar: { _ in
-            List(selection: $tabSelection) {
-//                ForEach(taskManager.activeTasks.keys.sorted(), id: \.self) { key in
-//                    if let task = taskManager.activeTasks[key] {
-//                        SidebarTaskTileView(task: task)
-//                            .onTapGesture {
-//                                tabSelection = key
-//                            }
-//                    } else {
-//                        Text("Unknown")
-//                    }
-//                }
+            if activeTasks.isEmpty {
+                    Text("No active tasks")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List(selection: $tabSelection) {
+                    //                ForEach(taskManager.activeTasks.keys.sorted(), id: \.self) { key in
+                    //                    if let task = taskManager.activeTasks[key] {
+                    //                        SidebarTaskTileView(task: task)
+                    //                            .onTapGesture {
+                    //                                tabSelection = key
+                    //                            }
+                    //                    } else {
+                    //                        Text("Unknown")
+                    //                    }
+                    //                }
 
-                ForEach(activeTasks, id: \.task.id) { task in
-                    SidebarTaskTileView(task: task)
+                    ForEach(activeTasks, id: \.task.id) { task in
+                        SidebarTaskTileView(task: task)
+                    }
                 }
+                .listStyle(.automatic)
+                .accentColor(.secondary)
             }
-            .listStyle(.automatic)
-            .accentColor(.secondary)
         }
         .onReceive(taskManager.$activeTasks) { activeTasks in
             self.activeTasks = Array(activeTasks.values)
@@ -106,7 +117,7 @@ struct UtilityAreaDebugView: View {
 }
 
 struct SidebarTaskTileView: View {
-    @ObservedObject var task: CETaskRun
+    @ObservedObject var task: CEActiveTask
     var body: some View {
         HStack {
             Image(systemName: "gearshape")
@@ -121,7 +132,7 @@ struct SidebarTaskTileView: View {
     }
 }
 struct TaskOutputView: View {
-    @ObservedObject var task: CETaskRun
+    @ObservedObject var task: CEActiveTask
     var body: some View {
         VStack(alignment: .leading) {
             Text(task.output)

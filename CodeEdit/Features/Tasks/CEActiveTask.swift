@@ -8,7 +8,7 @@
 import Foundation
 
 /// Stores the state of a task once it's executed
-class CETaskRun: ObservableObject, Identifiable, Hashable {
+class CEActiveTask: ObservableObject, Identifiable, Hashable {
     /// The current progress of the task.
     @Published private(set) var output: String  = ""
 
@@ -47,6 +47,7 @@ class CETaskRun: ObservableObject, Identifiable, Hashable {
                 isLoading: false
             )
             Task { [weak self] in
+                await self?.updateOutput("\nFinished running \(self?.task.name ?? "Task").\n\n")
                 await self?.updateTaskStatus(to: .finished)
             }
         }
@@ -145,7 +146,7 @@ class CETaskRun: ObservableObject, Identifiable, Hashable {
         }
     }
 
-    static func == (lhs: CETaskRun, rhs: CETaskRun) -> Bool {
+    static func == (lhs: CEActiveTask, rhs: CEActiveTask) -> Bool {
         return lhs.output == rhs.output &&
         lhs.status == rhs.status
     }

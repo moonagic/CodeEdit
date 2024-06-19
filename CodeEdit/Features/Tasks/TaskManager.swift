@@ -11,7 +11,7 @@ import Combine
 
 /// This class handles the execution of tasks
 final class TaskManager: ObservableObject {
-    @Published var activeTasks: [UUID: CETaskRun] = [:]
+    @Published var activeTasks: [UUID: CEActiveTask] = [:]
     @Published var selectedTaskID: UUID?
 
     var selectedTask: CETask? {
@@ -19,7 +19,11 @@ final class TaskManager: ObservableObject {
             return availableTasks.first { $0.id == selectedTaskID }
         } else {
             if let newSelectedTask = availableTasks.first {
-                self.selectedTaskID = newSelectedTask.id
+                Task {
+                    await MainActor.run {
+                        self.selectedTaskID = newSelectedTask.id
+                    }
+                }
                 return newSelectedTask
             }
         }
@@ -32,17 +36,27 @@ final class TaskManager: ObservableObject {
         return workspaceSettings.preferences.tasks.items
     }
 
+    var taskStatus: (UUID) -> CETaskStatus {
+        return { taskID in
+            return self.activeTasks[taskID]?.status ?? .stopped
+        }
+    }
+
     func executeActiveTask() {
         @Service var workspaceSettings: CEWorkspaceSettings
         let task = workspaceSettings.preferences.tasks.items.first { $0.id == selectedTaskID }
         guard let task else { return }
+        runTask(task: task)
+    }
+
+    func runTask(task: CETask) {
         // A process can only be started once, that means we have to renew the Process and Pipe
         // but don't initialise a new object.
         if activeTasks[task.id] != nil {
             activeTasks[task.id]!.renew()
             activeTasks[task.id]!.run()
         } else {
-            let runningTask = CETaskRun(task: task)
+            let runningTask = CEActiveTask(task: task)
             runningTask.run()
             Task {
                 await MainActor.run {
@@ -51,7 +65,7 @@ final class TaskManager: ObservableObject {
             }
         }
     }
-    private func createRunningTask(taskID: UUID, runningTask: CETaskRun) async {
+    private func createRunningTask(taskID: UUID, runningTask: CEActiveTask) async {
         await MainActor.run {
             activeTasks[taskID] = runningTask
         }

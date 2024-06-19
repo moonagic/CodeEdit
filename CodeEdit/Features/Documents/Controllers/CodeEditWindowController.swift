@@ -36,7 +36,7 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
         ServiceContainer.register(
             TaskManager()
         )
-        
+
         @Service var taskmanger: TaskManager
         self.taskManagerListener = taskmanger
         super.init(window: window)

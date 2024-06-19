@@ -27,12 +27,17 @@ struct TasksDropDownMenuView: View {
             Image(systemName: "gearshape")
                 .imageScale(.medium)
 
-            Text(taskManager.selectedTask?.name ?? "Unknown")
-                .font(.subheadline)
+            if taskManager.availableTasks.isEmpty {
+                Text("Create Tasks")
+                    .font(.subheadline)
+            } else {
+                Text(taskManager.selectedTask?.name ?? "Unknown")
+                    .font(.subheadline)
+            }
 
             if let taskID = taskManager.selectedTaskID {
                 Circle()
-                    .fill(taskStatus[taskID]?.color ?? CETaskStatus.stopped.color)
+                    .fill(taskManager.taskStatus(taskID).color)
                     .frame(width: 5, height: 5)
             } else {
                 Circle()
@@ -64,18 +69,18 @@ struct TasksDropDownMenuView: View {
         })
         .popover(isPresented: $isTaskPopOverPresented) {
             VStack(alignment: .leading, spacing: 0) {
-                if let tasks = tasksSettings?.items {
+                if let tasks = tasksSettings?.items, !tasks.isEmpty {
                     ForEach(tasks, id: \.name) { item in
-                        TasksDropDownMenuItemView(
+                        TasksPopoverView(
                             taskManager: taskManager,
                             settings: workspaceSettings,
                             taskStatus: taskStatus,
                             item: item
                         )
                     }
+                    Divider()
+                        .padding(.vertical, 5)
                 }
-                Divider()
-                    .padding(.vertical, 5)
 
                 Group {
                     OptionMenuItemView(label: "Add Task..") {
@@ -105,11 +110,7 @@ struct TasksDropDownMenuView: View {
     }
 }
 
-// #Preview {
-    //    TasksDropDownMenuView()
-// }
-
-struct TasksDropDownMenuItemView: View {
+struct TasksPopoverView: View {
     @Environment(\.dismiss)
     private var dismiss
 
@@ -134,15 +135,10 @@ struct TasksDropDownMenuItemView: View {
             Text(item.name)
 
             Spacer()
-            if let taskID = taskManager.selectedTaskID {
-                Circle()
-                    .fill(taskStatus[taskID]?.color ?? CETaskStatus.stopped.color)
-                    .frame(width: 5, height: 5)
-            } else {
-                Circle()
-                    .fill(CETaskStatus.stopped.color)
-                    .frame(width: 5, height: 5)
-            }
+
+            Circle()
+                .fill(taskManager.taskStatus(item.id).color)
+                .frame(width: 5, height: 5)
         }
         .padding(.vertical, 5)
         .padding(.horizontal, 10)
@@ -154,8 +150,3 @@ struct TasksDropDownMenuItemView: View {
         .clipShape(RoundedRectangle(cornerRadius: 5))
     }
 }
-
-//#Preview {
-//    TasksDropDownMenuView()
-//}
-
