@@ -31,7 +31,10 @@ public enum Shell: String {
         // Set the executable to bash
         process.executableURL = URL(fileURLWithPath: shell.url)
         // Pass the command as an argument to bash
-        process.arguments = ["-c", command]
+        // `--login` argument is needed when using a shell with a process in Swift to ensure
+        // that the shell loads the user's profile settings (like .bash_profile or .profile),
+        // which configure the environment variables and other shell settings.
+        process.arguments = ["--login", "-c", command]
 
         // Create a queue to handle output data
         let outputDataQueue = DispatchQueue(label: "bash-output-queue")

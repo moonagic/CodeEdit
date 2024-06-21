@@ -11,15 +11,15 @@ struct TasksDropDownMenuView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @State var isTaskPopOverPresented: Bool = false
+    @ObservedObject var taskManager: TaskManager
+
+    @State private var taskStatus: [UUID: CETaskStatus] = [:]
+    @State private var isTaskPopOverPresented: Bool = false
     @State private var isHoveringTasks: Bool = false
 
     var projectSettings: CEWorkspaceSettingsData.ProjectSettings?
     var tasksSettings: CEWorkspaceSettingsData.TasksSettings?
 
-    @State private var taskStatus: [UUID: CETaskStatus] = [:]
-
-    @ObservedObject var taskManager: TaskManager
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: "gearshape")

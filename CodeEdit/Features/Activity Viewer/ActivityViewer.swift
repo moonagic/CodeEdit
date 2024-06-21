@@ -47,9 +47,9 @@ struct ActivityViewer: View {
                     )
 
                     TasksDropDownMenuView(
+                        taskManager: taskManager,
                         projectSettings: projectSettings,
-                        tasksSettings: tasksSettings,
-                        taskManager: taskManager
+                        tasksSettings: tasksSettings
                     )
 
                     Spacer()

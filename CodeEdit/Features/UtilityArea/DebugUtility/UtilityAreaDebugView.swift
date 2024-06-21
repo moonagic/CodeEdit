@@ -15,63 +15,82 @@ struct UtilityAreaDebugView: View {
     @State var tabSelection: UUID?
     @State var activeTasks: [CEActiveTask] = []
 
+    @State private var scrollProxy: ScrollViewProxy?
+
     @Namespace var bottomID
 
     var body: some View {
         UtilityAreaTabView(model: utilityAreaViewModel.tabViewModel) { _ in
             if let tabSelection, !activeTasks.isEmpty {
                 ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack {
-                            HStack {
-                                Button {
-                                    if let task = taskManager.activeTasks[tabSelection]?.task {
-                                        taskManager.runTask(task: task)
-                                    }
-                                } label: {
-                                    Image(systemName: "memories")
-                                        .foregroundStyle(.green)
-                                }.buttonStyle(.icon)
+                    VStack {
+                        HStack {
+                            Button {
+                                if let task = taskManager.activeTasks[tabSelection]?.task {
+                                    taskManager.runTask(task: task)
+                                }
+                            } label: {
+                                Image(systemName: "memories")
+                                    .foregroundStyle(.green)
+                            }.buttonStyle(.icon)
 
-                                Button {
-                                    if let taskID = taskManager.activeTasks[tabSelection]?.task.id {
-                                        taskManager.terminateTask(taskID: taskID)
-                                    }
-                                } label: {
-                                    Image(systemName: "stop.fill")
-                                        .foregroundStyle(.red)
-                                }.buttonStyle(.icon)
-
-                                Divider()
-
-                                Button {
-                                    proxy.scrollTo(bottomID)
-                                } label: {
-                                    Image(systemName: "text.append")
-                                }.buttonStyle(.icon)
-
-                                Button {
-                                    Task {
-                                        await taskManager.activeTasks[tabSelection]?.clearOutput()
-                                    }
-                                } label: {
-                                    Image(systemName: "trash")
-                                }.buttonStyle(.icon)
-
-                                Spacer()
-                            }
-                            .padding(.horizontal, 5)
-                            .padding(.top, 3)
+                            Button {
+                                if let taskID = taskManager.activeTasks[tabSelection]?.task.id {
+                                    taskManager.terminateTask(taskID: taskID)
+                                }
+                            } label: {
+                                Image(systemName: "stop.fill")
+                                    .foregroundStyle(.red)
+                            }.buttonStyle(.icon)
 
                             Divider()
 
-                            if taskManager.activeTasks[tabSelection] != nil {
-                                TaskOutputView(task: taskManager.activeTasks[tabSelection]!)
-                            }
+                            Button {
+                                withAnimation {
+                                    scrollProxy?.scrollTo(bottomID, anchor: .bottom)
+                                }
+                            } label: {
+                                Image(systemName: "text.append")
+                            }.buttonStyle(.icon)
 
-                            EmptyView()
-                                .tag(bottomID)
-                        }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            Button {
+                                Task {
+                                    await taskManager.activeTasks[tabSelection]?.clearOutput()
+                                }
+                            } label: {
+                                Image(systemName: "trash")
+                            }.buttonStyle(.icon)
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 5)
+                        .padding(.top, 8)
+                        .frame(maxHeight: 20)
+
+                        Divider()
+
+                        ScrollView {
+                            VStack {
+                                if taskManager.activeTasks[tabSelection] != nil {
+                                    TaskOutputView(task: taskManager.activeTasks[tabSelection]!)
+                                }
+
+                                Rectangle()
+                                    .frame(width: 1, height: 1)
+                                    .foregroundStyle(.clear)
+                                    .id(bottomID)
+
+                            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        }
+                        .onAppear {
+                            withAnimation {
+                                scrollProxy?.scrollTo(bottomID, anchor: .bottom)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .onAppear {
+                        scrollProxy = proxy
                     }
                 }
             } else {
@@ -85,23 +104,12 @@ struct UtilityAreaDebugView: View {
             }
         } leadingSidebar: { _ in
             if activeTasks.isEmpty {
-                    Text("No active tasks")
-                        .font(.system(size: 16))
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Text("No active tasks")
+                    .font(.system(size: 16))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(selection: $tabSelection) {
-                    //                ForEach(taskManager.activeTasks.keys.sorted(), id: \.self) { key in
-                    //                    if let task = taskManager.activeTasks[key] {
-                    //                        SidebarTaskTileView(task: task)
-                    //                            .onTapGesture {
-                    //                                tabSelection = key
-                    //                            }
-                    //                    } else {
-                    //                        Text("Unknown")
-                    //                    }
-                    //                }
-
                     ForEach(activeTasks, id: \.task.id) { task in
                         SidebarTaskTileView(task: task)
                     }
